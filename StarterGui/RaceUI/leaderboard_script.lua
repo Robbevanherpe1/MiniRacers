@@ -37,13 +37,23 @@ local function updateLeaderboard(data)
 	for i = 1, 5 do
 		local info = data[i]
 		if info then
-			local plr = Players:FindFirstChild(info.Name)
-			local placement = plr and plr:GetAttribute("Placement")
-			nameLabels[i].Text = info.Name
-			finishLabels[i].Visible = placement ~= nil
-			placementLabels[i].Visible = true
-			imgLabels[i].Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. info.UserId .. "&width=420&height=420&format=png"
-			imgLabels[i].Visible = true
+			local player1 = Players:FindFirstChild(info.Name)
+			local placement = player1:GetAttribute("Placement")
+			if placement ~= nil then
+				local plr = Players:FindFirstChild(info.Name)
+				local placement = plr and plr:GetAttribute("Placement")
+				nameLabels[i].Text = info.Name
+				finishLabels[i].Visible = placement ~= nil
+				placementLabels[i].Visible = true
+				imgLabels[i].Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. info.UserId .. "&width=420&height=420&format=png"
+				imgLabels[i].Visible = true
+				
+			else
+				nameLabels[i].Text = ""
+				imgLabels[i].Visible = false
+				placementLabels[i].Visible = false
+				finishLabels[i].Visible = false
+			end
 		else
 			nameLabels[i].Text = ""
 			imgLabels[i].Visible = false
