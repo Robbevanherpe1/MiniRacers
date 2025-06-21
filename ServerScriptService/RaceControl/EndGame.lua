@@ -1,46 +1,39 @@
 -- @ScriptType: ModuleScript
 local EndRace = {}
-local RaceData = require(game.ServerScriptService.RaceControl.RaceData)
-local AddRewardFn = require(game.ServerScriptService.PlayerData.AddReward)
-local players = game:GetService("Players")
+local Players = game:GetService("Players")
+local RS    = game:GetService("ReplicatedStorage")
 
-local resetUI = game.ReplicatedStorage:FindFirstChild("ResetRaceUI") or Instance.new("RemoteEvent", game.ReplicatedStorage)
-resetUI.Name = "ResetRaceUI"
+local RaceData   = require(script.Parent.RaceData)
+local RaceLoop   = require(script.Parent.RaceLoop)
+local AddReward  = require(game.ServerScriptService.PlayerData.AddReward)
 
-function EndRace.backToLobby(player, position)
-	local workspaceService = game:GetService("Workspace")
-	local car = workspaceService:FindFirstChild(player.Name .. "_Car")
+local resetUI = RS:FindFirstChild("ResetRaceUI")
+if not resetUI then
+	resetUI = Instance.new("RemoteEvent")
+	resetUI.Name   = "ResetRaceUI"
+	resetUI.Parent = RS
+end
 
-	if player.Character then
-		local humanoid = player.Character:FindFirstChild("Humanoid")
-		if humanoid and humanoid.SeatPart and car and humanoid.SeatPart:IsDescendantOf(car) then
-			humanoid.Sit = false
-			task.wait()
-		end
-	end
-
-	if car and car:IsA("Model") then
-		car:Destroy()
-	end
+function EndRace.backToLobby(player, placement)
+	local car = workspace:FindFirstChild(player.Name .. "_Car")
+	if car and car:IsA("Model") then car:Destroy() end
 
 	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-		local spawn = workspaceService.Map1.Spawn.Spawn.SpawnLocation
-		player.Character.HumanoidRootPart.CFrame = spawn.CFrame + Vector3.new(0, 5, 0)
+		local spawn = workspace.Map1.Spawn.Spawn.SpawnLocation
+		player.Character.HumanoidRootPart.CFrame = spawn.CFrame + Vector3.new(0,5,0)
 	end
 
 	RaceData.remove(player)
-	AddRewardFn(player, position)
+	AddReward(player, placement)
 
 	if RaceData.getCount() == 0 then
-		for _, p in ipairs(players:GetPlayers()) do
-			p:SetAttribute("Lap", 0)
-			p:SetAttribute("Checkpoint", 0)
-			p:SetAttribute("FinishedRace", false)
-			p:SetAttribute("RaceMode", 0)
-			resetUI:FireClient(p)
-			
+		-- last racer finished → reset for next race
+		RaceData.reset()
+		RaceLoop.resetAll()
+		for _, plr in ipairs(Players:GetPlayers()) do
+			RaceLoop.startRaceLoop(plr)
+			resetUI:FireClient(plr)
 		end
-		print("[Server] ResetRaceUI fired to all clients")
 	end
 end
 
