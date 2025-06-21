@@ -1,5 +1,5 @@
 -- @ScriptType: ModuleScript
-local RaceData = {count = 0, racers = {}, placement = 0}
+local RaceData = { count = 0, racers = {}, placement = 0 }
 
 function RaceData.add(player)
 	if not RaceData.racers[player] then
